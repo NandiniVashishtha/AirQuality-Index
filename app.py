@@ -253,8 +253,7 @@ def trend_fig(df, col, name, color, limit=None, limit_name=None, y_title=""):
 # ─────────────────────────────────────────
 # LOAD DATA
 # ─────────────────────────────────────────
-data = load_data("data.xlsx")
-
+data = load_data("GRETAER_NOIDA_original.xlsx")
 # ─────────────────────────────────────────
 # AUTO-REFRESH
 # ─────────────────────────────────────────
