@@ -585,11 +585,40 @@ if has_loc:
 # SECTION 5: SPATIAL HEATMAP
 # ─────────────────────────────────────────
 if has_loc:
-
     st.markdown('<div class="section-title">🗺️ Spatial Pollution Heatmap</div>', unsafe_allow_html=True)
 
     lat_vals = filtered["latitude"].dropna()
     lon_vals = filtered["longitude"].dropna()
+    pm_vals  = filtered.loc[lat_vals.index, "pm25"].dropna()
+
+    # Only interpolate if we have variance in coordinates
+    if lat_vals.std() > 0 and lon_vals.std() > 0:
+        try:
+            grid_x, grid_y = np.mgrid[
+                lon_vals.min():lon_vals.max():30j,
+                lat_vals.min():lat_vals.max():30j
+            ]
+            grid_z = griddata(
+                (lon_vals.values, lat_vals.values),
+                pm_vals.values,
+                (grid_x, grid_y),
+                method="linear"
+            )
+            heat_data = [
+                [grid_y[i][j], grid_x[i][j], float(grid_z[i][j])]
+                for i in range(grid_x.shape[0])
+                for j in range(grid_x.shape[1])
+                if not np.isnan(grid_z[i][j])
+            ]
+        except Exception:
+            heat_data = [[row["latitude"], row["longitude"], row["pm25"]]
+                         for _, row in filtered.iterrows()
+                         if pd.notna(row["latitude"])]
+    else:
+        # fallback: use raw points
+        heat_data = [[row["latitude"], row["longitude"], row["pm25"]]
+                     for _, row in filtered.iterrows()
+                     if pd.notna(row["latitude"])]
 
     m2 = folium.Map(
         location=[lat_vals.mean(), lon_vals.mean()],
@@ -597,16 +626,19 @@ if has_loc:
         tiles="CartoDB dark_matter"
     )
 
-    heat_data = [
-        [row["latitude"], row["longitude"], row["pm25"]]
-        for _, row in filtered.iterrows()
-        if pd.notna(row["latitude"]) and pd.notna(row["longitude"])
-    ]
-
     if heat_data:
-        HeatMap(heat_data, radius=25, blur=20).add_to(m2)
+        HeatMap(
+            heat_data,
+            radius=25,
+            blur=20,
+            max_zoom=16,
+            gradient={"0.2":"#2ea44f","0.5":"#ffd166","0.8":"#f0883e","1.0":"#f85149"}
+        ).add_to(m2)
 
     st_folium(m2, height=420, use_container_width=True)
+
+    st.markdown("---")
+
 # ─────────────────────────────────────────
 # SECTION 6: RAW DATA TABLE
 # ─────────────────────────────────────────
