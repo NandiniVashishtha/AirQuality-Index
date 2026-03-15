@@ -584,7 +584,7 @@ if has_loc:
 # ─────────────────────────────────────────
 # SECTION 5: SPATIAL HEATMAP
 # ─────────────────────────────────────────
-if has_loc and len(filtered) >= 4:
+if has_loc:
     st.markdown('<div class="section-title">🗺️ Spatial Pollution Heatmap</div>', unsafe_allow_html=True)
 
     lat_vals = filtered["latitude"].dropna()
