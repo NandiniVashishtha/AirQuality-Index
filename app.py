@@ -635,7 +635,7 @@ if has_loc and len(filtered) >= 4:
             gradient={"0.2":"#2ea44f","0.5":"#ffd166","0.8":"#f0883e","1.0":"#f85149"}
         ).add_to(m2)
 
-    st_folium(m, height=420, use_container_width=True)
+    st_folium(m2, height=420, use_container_width=True)
 
     st.markdown("---")
 
